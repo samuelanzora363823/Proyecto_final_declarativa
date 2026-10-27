@@ -2,36 +2,47 @@ package org.example;
 
 import org.example.screen.components.*;
 import org.example.screen.components.TextField;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 
 public class Window extends JFrame {
-    private final TextField txtEntrada = new TextField("Ej: 3*x");
+    private final TextField txtEntrada = new TextField("Ej: 3*x, tan(x), asin(x)");
     private final TextField txtLimiteA = new TextField("Límite inferior (a)");
     private final TextField txtLimiteB = new TextField("Límite superior (b)");
+    private final JComboBox<String> cmbOperacion = new JComboBox<>(new String[]{"Integral definida", "Derivada"});
+    private final JLabel lblFuncion = etiqueta("Función f(x)");
+    private final JLabel lblEtiquetaLimites = etiqueta("Límites de integración");
+    private final JPanel panelLimites = new JPanel(new GridLayout(1, 2, 10, 0));
     private final PanelResult panelResultado = new PanelResult();
     private final JLabel lblEstado = new JLabel("");
+    private Buttons btnResolver;
 
     public Window(Connection motor) {
-        super("Cálculo de Integrales en Prolog");
+        super("Calculadora de Integrales y Derivadas");
 
         JPanel contenido = new JPanel();
         contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
         contenido.setOpaque(false);
 
-        agregar(contenido, etiqueta("Función a integrar f(x)"), 6);
-        agregar(contenido, txtEntrada, 10);
-        agregar(contenido, etiqueta("Límites de integración"), 6);
+        agregar(contenido, etiqueta("Operación"), 6);
+        cmbOperacion.setFont(Theme.sans(Font.PLAIN, 14));
+        cmbOperacion.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        cmbOperacion.setAlignmentX(Component.LEFT_ALIGNMENT);
+        agregar(contenido, cmbOperacion, 10);
 
-        JPanel panelLimites = new JPanel(new GridLayout(1, 2, 10, 0));
+        agregar(contenido, lblFuncion, 6);
+        agregar(contenido, txtEntrada, 10);
+        agregar(contenido, lblEtiquetaLimites, 6);
+
         panelLimites.setOpaque(false);
         panelLimites.add(txtLimiteA);
         panelLimites.add(txtLimiteB);
         panelLimites.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         agregar(contenido, panelLimites, 18);
+
         agregar(contenido, crearBotones(motor), 22);
         agregar(contenido, panelResultado, 10);
         agregar(contenido, crearPie(), 0);
@@ -43,17 +54,36 @@ public class Window extends JFrame {
         raiz.add(contenido, BorderLayout.CENTER);
 
         setContentPane(raiz);
+        cmbOperacion.addActionListener(e -> actualizarModo());
         setMinimumSize(new Dimension(660, 560));
         pack();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        actualizarModo();
+    }
+
+    private void actualizarModo() {
+        boolean modoIntegral =
+                "Integral definida".equals(cmbOperacion.getSelectedItem());
+
+        lblEtiquetaLimites.setVisible(modoIntegral);
+        panelLimites.setVisible(modoIntegral);
+
+        btnResolver.setText(
+                modoIntegral ? "Resolver Integral" : "Derivar función"
+        );
+
+        revalidate();
+        repaint();
+        pack();
+        setLocationRelativeTo(null);
     }
 
     private JPanel crearEncabezado() {
-        JLabel titulo = new JLabel("Resolutor de Integrales");
+        JLabel titulo = new JLabel("Calculadora simbólica");
         titulo.setFont(Theme.sans(Font.BOLD, 24));
         titulo.setForeground(Theme.TEXT);
-        JLabel subtitulo = new JLabel("Solución de integrales y área bajo la curva con SWI-Prolog");
+        JLabel subtitulo = new JLabel("Integrales definidas y derivadas con Java y SWI-Prolog");
         subtitulo.setFont(Theme.sans(Font.PLAIN, 13));
         subtitulo.setForeground(Theme.MUTED);
 
@@ -67,7 +97,7 @@ public class Window extends JFrame {
     }
 
     private JPanel crearBotones(Connection motor) {
-        Buttons btnResolver = new Buttons("Resolver Integral", Theme.BLUE, Theme.BG, 26, 11, 14);
+        btnResolver = new Buttons("Resolver Integral", Theme.BLUE, Theme.BG, 26, 11, 14);
         btnResolver.addActionListener(e -> ejecutar(motor));
 
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -101,6 +131,7 @@ public class Window extends JFrame {
 
         try {
             String resultado = motor.resolver(entrada, a, b);
+
             if (resultado.startsWith("Sin solución")) {
                 mostrar("", resultado, Theme.AMBER);
             } else {
@@ -119,16 +150,27 @@ public class Window extends JFrame {
 
     private void copiarResultado() {
         String t = panelResultado.getTexto();
-        if (t.isEmpty()) return;
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(t), null);
+
+        if (t.isEmpty()) {
+            return;
+        }
+
+        Toolkit.getDefaultToolkit().getSystemClipboard()
+                .setContents(new StringSelection(t), null);
+
         lblEstado.setText("Copiado al portapapeles");
         lblEstado.setForeground(Theme.BLUE);
     }
 
-    private static void agregar(JPanel panel, JComponent c, int espacioDespues) {
-        c.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(c);
-        if (espacioDespues > 0) panel.add(Box.createVerticalStrut(espacioDespues));
+    private static void agregar(
+            JPanel panel, JComponent componente, int espacioDespues) {
+
+        componente.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(componente);
+
+        if (espacioDespues > 0) {
+            panel.add(Box.createVerticalStrut(espacioDespues));
+        }
     }
 
     private static JLabel etiqueta(String texto) {
