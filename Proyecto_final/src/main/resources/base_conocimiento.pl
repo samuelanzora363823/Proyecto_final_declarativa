@@ -31,6 +31,18 @@ integral(acosh(x), x, x*acosh(x) - sqrt(x^2-1)).
 integral(arctanh(x), x, x*atanh(x) + log(1-x^2)/2).
 integral(atanh(x), x, x*atanh(x) + log(1-x^2)/2).
 integral(exp(x), x, exp(x)).
+integral(A^U, x, Resultado) :-
+    number(A), A > 0,
+    ( A =:= 1 ->
+        Resultado = x
+    ; derivada(U, x, DU),
+      \+ sub_term(x, DU),
+      M is DU,
+      ( M =:= 0 ->
+          Resultado = A^U*x
+      ; Resultado = A^U/(M*log(A))
+      )
+    ).
 
 % =========================
 % REGLAS DE DERIVACION
