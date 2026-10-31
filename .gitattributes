@@ -1,0 +1,13 @@
+# Normaliza los fin de linea en el repositorio, para que un mismo archivo no
+# aparezca como modificado solo por haberse editado en Windows y en Linux.
+* text=auto
+
+*.java  text diff=java
+*.pl    text
+*.xml   text
+*.md    text
+*.gitignore text
+
+*.jar   binary
+*.png   binary
+*.pdf   binary
