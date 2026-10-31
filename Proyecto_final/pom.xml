@@ -7,22 +7,151 @@
     <groupId>org.example</groupId>
     <artifactId>Proyecto_final</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Calculadora de Integrales y Derivadas</name>
+    <description>
+        Sistema experto de integrales y derivadas. Interfaz en Java (Swing) y
+        base de conocimiento en SWI-Prolog, conectadas por JPL.
+    </description>
 
     <properties>
-        <maven.compiler.source>27</maven.compiler.source>
-        <maven.compiler.target>27</maven.compiler.target>
+        <!--
+            Java 17 en lugar de 27: el codigo no usa ninguna caracteristica
+            posterior, y exigir un JDK 27 instalado era un motivo de fallo
+            gratuito para quien reciba el proyecto.
+        -->
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!--
+            Carpeta de instalacion de SWI-Prolog. De aqui se toma jpl.jar.
+            Los perfiles de mas abajo ponen el valor habitual de cada sistema
+            operativo; si tu instalacion esta en otro sitio, no hace falta
+            editar este archivo, basta pasarlo en la linea de comandos:
+
+                mvn -Dswipl.home="D:/swipl" package
+        -->
+        <swipl.home>C:/Program Files/swipl</swipl.home>
+        <main.class>org.example.Main</main.class>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>swipl-windows</id>
+            <activation>
+                <os><family>windows</family></os>
+            </activation>
+            <properties>
+                <swipl.home>C:/Program Files/swipl</swipl.home>
+            </properties>
+        </profile>
+        <profile>
+            <id>swipl-mac</id>
+            <activation>
+                <os><family>mac</family></os>
+            </activation>
+            <properties>
+                <swipl.home>/opt/homebrew/lib/swipl</swipl.home>
+            </properties>
+        </profile>
+        <profile>
+            <id>swipl-linux</id>
+            <activation>
+                <os><family>unix</family><name>linux</name></os>
+            </activation>
+            <properties>
+                <swipl.home>/usr/lib/swi-prolog</swipl.home>
+            </properties>
+        </profile>
+    </profiles>
+
     <dependencies>
-        <!-- Dependencia local de JPL (SWI-Prolog) -->
+        <!--
+            JPL viene con SWI-Prolog, no con Maven, asi que se declara con
+            scope system apuntando a la instalacion local.
+
+            La version anterior de este archivo tenia aqui la ruta fija
+            /usr/share/java/jpl.jar, que no existe en Windows: funcionaba en
+            IntelliJ porque el IDE usa la libreria del modulo, pero cualquier
+            'mvn package' fallaba.
+        -->
         <dependency>
             <groupId>org.jpl7</groupId>
             <artifactId>jpl</artifactId>
             <version>7.0.0</version>
             <scope>system</scope>
-            <systemPath>/usr/share/java/jpl.jar</systemPath>
+            <systemPath>${swipl.home}/lib/jpl.jar</systemPath>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>calculadora-integrales</finalName>
+
+        <plugins>
+            <!--
+                Copia jpl.jar junto al jar del proyecto, para que el manifiesto
+                lo encuentre y 'java -jar' funcione sin armar el classpath a
+                mano. Si la carpeta de SWI-Prolog no existe, Maven avisa y
+                sigue: el proyecto compila igual.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copiar-jpl</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${swipl.home}/lib</directory>
+                                    <includes>
+                                        <include>jpl.jar</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+                Jar ejecutable. Antes no habia ningun plugin de empaquetado, de
+                modo que no existia un comando que produjera algo que el
+                docente pudiera ejecutar.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>lib/jpl.jar</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Permite 'mvn exec:java' para ejecutar sin empaquetar. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
