@@ -9,7 +9,7 @@ public final class Theme {
     public static final Color CARD = new Color(0x2A2B3A);
     public static final Color BORDER = new Color(0x3A3C52);
     public static final Color TEXT = new Color(0xF2F3F8);
-    public static final Color MUTED = new Color(0x909680);
+    public static final Color MUTED = new Color(0x9096A0);
     public static final Color BLUE = new Color(0x6C8CFF);
     public static final Color GREEN = new Color(0x3DDC97);
     public static final Color RED = new Color(0xFF6B6B);

@@ -7,7 +7,7 @@ import java.awt.*;
 
 public class PanelResult extends JPanel {
     private final JLabel lblTitulo = new JLabel("Resultado");
-    private final JTextArea txtResultado = new JTextArea(6, 30);
+    private final JTextArea txtResultado = new JTextArea(10, 30);
 
     public PanelResult() {
         super(new BorderLayout(0, 6));
@@ -17,7 +17,7 @@ public class PanelResult extends JPanel {
         txtResultado.setEditable(false);
         txtResultado.setLineWrap(true);
         txtResultado.setWrapStyleWord(true);
-        txtResultado.setFont(Theme.mono(Font.PLAIN, 17));
+        txtResultado.setFont(Theme.mono(Font.PLAIN, 15));
         txtResultado.setBackground(Theme.CARD);
         txtResultado.setForeground(Theme.TEXT);
         txtResultado.setCaretColor(Theme.CARD);
