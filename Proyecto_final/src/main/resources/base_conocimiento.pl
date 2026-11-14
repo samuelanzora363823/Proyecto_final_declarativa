@@ -2,6 +2,12 @@
 % BASE DE CONOCIMIENTO - Sistema experto de integrales y derivadas
 % Proyecto Final de Programacion Declarativa, ciclo 02/2026
 %
+% INTEGRANTES:
+% Diego Josue Dominguez Cortez - 00081022
+% Edwin Oswaldo Guzman Melendez - 0371023
+% Samuel Antonio Anzora Castellanos - 00363823
+% Diego Rafael Flores Serrato - 00029823
+%
 % Organizacion del archivo:
 %   1. API para la interfaz Java
 %   2. Normalizacion de notacion (alias)
